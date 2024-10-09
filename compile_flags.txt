@@ -1,0 +1,4 @@
+-I./lib/include/
+-I./src/
+-target
+x86_64-pc-windows-gnu
