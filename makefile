@@ -1,10 +1,13 @@
+CC=gcc
+CFLAGS=-g -Wall -Wformat
+
 all: ./bin/main
 
-./bin/main: ./bin/main.o
-	gcc -o $@ $^ -L./lib/ -lglad -lglfw3 -lgdi32
+./bin/main: ./bin/main.o ./bin/shader.o
+	$(CC) -o $@ $^ -L./lib/ -lglad -lglfw3 -lgdi32
 
 ./bin/%.o: ./src/%.c
-	gcc -c -o $@ $^ -I./src/ -I./lib/include/ -g -Wall
+	$(CC) -c -o $@ $^ -I./src/ -I./lib/include/ $(CFLAGS)
 
 run:
 	@./bin/main

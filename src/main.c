@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include "shader.h"
+
 #define WIDTH 640
 #define HEIGHT 640
 
@@ -37,6 +39,9 @@ int main() {
 	glViewport(0, 0, width, height);
 	glClearColor(.1f, .1f, .1f, 1.0f);
 
+	GLuint program = 0;
+	new_program(&program, "./shaders/vert.glsl", "./shaders/frag.glsl");
+
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		glfwPollEvents();
@@ -44,6 +49,8 @@ int main() {
 	}
 
 	glfwDestroyWindow(window);
+
+	glDeleteProgram(program);
 
 	return 0;
 }
