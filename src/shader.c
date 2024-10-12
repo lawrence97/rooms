@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
 #include "shader.h"
 
@@ -19,17 +19,21 @@ int new_shader(unsigned int *shader, const char *path, int type) {
 	capacity = ftell(f);
 	fseek(f, 0l, SEEK_SET);
 
-	char buffer[capacity];
-	memset(buffer, '\0', capacity);
+	char *buffer = (char *)calloc(sizeof(char), capacity);
+
 	unsigned long long bytes_read = 0;
 	bytes_read = fread(buffer, sizeof(char), capacity, f);
 
 	*shader = glCreateShader(type);
 
-	const GLchar *buffer_ptr = &buffer[0];
+	const GLchar *buffer_ptr = buffer;
+	const GLint *buffer_length = (GLint *)&bytes_read;
 
-	glShaderSource(*shader, 1, &buffer_ptr, (const GLint *)&bytes_read);
+	glShaderSource(*shader, 1, &buffer_ptr, buffer_length);
 	glCompileShader(*shader);
+
+	free(buffer);
+	buffer = NULL;
 
 	return 0;
 }

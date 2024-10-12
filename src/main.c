@@ -40,7 +40,10 @@ int main() {
 	glClearColor(.1f, .1f, .1f, 1.0f);
 
 	GLuint program = 0;
-	new_program(&program, "./shaders/vert.glsl", "./shaders/frag.glsl");
+	if (new_program(&program, "./shaders/vert.glsl", "./shaders/frag.glsl")) {
+		printf("error - shader program stage.\n");
+		return -1;
+	}
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
