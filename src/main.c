@@ -4,6 +4,9 @@
 
 #include <stdio.h>
 
+#include "maths.h"
+#include "primitives.h"
+#include "render.h"
 #include "shader.h"
 
 #define WIDTH 640
@@ -45,15 +48,40 @@ int main() {
 		return -1;
 	}
 
+	vec3 o1 = {.0f, .0f, .0f};
+	vec2 d1 = {160.0f, 160.0f};
+	vec2 o2 = {.25f, .25f};
+	vec2 d2 = {.5f, .5f};
+	vec4 c1 = {1.0f, 1.0f, .0f, 1.0f};
+	vec4 c2 = {0.0f, 1.0f, 1.0f, 1.0f};
+
+	tile_t t1 = {o1, d1, o2, d2, {c1, c1, c1, c2}};
+	vertices_t v1 = {0};
+	new_vertices(&v1, &t1);
+	handles_t h1 = {0};
+	new_buffers(&h1, &v1);
+
+	glUseProgram(program);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBindVertexArray(h1.vao);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
 
-	glfwDestroyWindow(window);
+	glDeleteVertexArrays(1, &h1.vao);
+	glDeleteBuffers(1, &h1.pbo);
+	glDeleteBuffers(1, &h1.tbo);
+	glDeleteBuffers(1, &h1.cbo);
 
 	glDeleteProgram(program);
+
+	glfwDestroyWindow(window);
 
 	return 0;
 }
