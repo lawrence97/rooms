@@ -3,9 +3,9 @@
 #include <glad/glad.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "maths.h"
-#include "primitives.h"
 #include "render.h"
 #include "shader.h"
 #include "texture.h"
@@ -61,41 +61,48 @@ int main() {
 	}
 	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 
-	vec3 o1 = {.0f, .0f, .0f};
-	vec2 d1 = {16.0f, 16.0f};
-	vec2 o2 = {.75f, .25f};
-	vec2 d2 = {.5f, .5f};
-	vec4 c1 = {1.0f, 1.0f, .0f, 1.0f};
-	vec4 c2 = {0.0f, 1.0f, 1.0f, 1.0f};
+	vec3 origin1 = {.0f, .0f, .0f};
+	vec2 dim1 = {16.0f, 16.0f};
+	vec2 texorigin1 = {.75f, .25f};
+	vec2 texdim1 = {.5f, .5f};
+	vec4 colour1 = {1.0f, 1.0f, .0f, 1.0f};
+	vec4 colour2 = {0.0f, 1.0f, 1.0f, 1.0f};
 
-	tile_t t1 = {o1, d1, o2, d2, {c1, c1, c1, c2}};
-	vertices_t v1 = {0};
-	new_vertices(&v1, &t1);
-	handles_t h1 = {0};
-	new_buffers(&h1, &v1);
+	vec3 origin2 = {100.0f, -100.0f, .0f};
+	vec4 colour3 = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	tile_t t1 = {origin1, dim1, texorigin1, texdim1, {colour1, colour1, colour1, colour2}};
+	tile_t t2 = {origin2, dim1, texorigin1, texdim1, {colour3, colour3, colour3, colour3}};
+
+	tile_t tiles[2] = {t1, t2};
+	batch_t batch1;
+	new_batch(&batch1, tiles, 2);
 
 	glUseProgram(program);
+	glBindTexture(GL_TEXTURE_2D, texture1.handle);
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(program);
-		glBindTexture(GL_TEXTURE_2D, texture1.handle);
-		glBindVertexArray(h1.vao);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(batch1.handles.vao);
+		glDrawArrays(GL_TRIANGLES, 0, batch1.n * 6);
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteVertexArrays(1, &h1.vao);
-	glDeleteBuffers(1, &h1.pbo);
-	glDeleteBuffers(1, &h1.tbo);
-	glDeleteBuffers(1, &h1.cbo);
+	glDeleteVertexArrays(1, &batch1.handles.vao);
+	glDeleteBuffers(1, &batch1.handles.pbo);
+	glDeleteBuffers(1, &batch1.handles.tbo);
+	glDeleteBuffers(1, &batch1.handles.cbo);
 
 	glDeleteTextures(1, &texture1.handle);
 	glDeleteProgram(program);
+
+	free(batch1.positions);
+	free(batch1.texcoords);
+	free(batch1.colours);
 
 	glfwDestroyWindow(window);
 

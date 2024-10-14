@@ -1,6 +1,6 @@
 #pragma once
 
-#include "primitives.h"
+#include "maths.h"
 
 typedef struct handles_t {
 	unsigned int vao;
@@ -9,4 +9,20 @@ typedef struct handles_t {
 	unsigned int cbo;
 } handles_t;
 
-void new_buffers(handles_t *handles, vertices_t *verts);
+typedef struct tile_t {
+	vec3 origin_pos;
+	vec2 dim_pos;
+	vec2 origin_tex;
+	vec2 dim_tex;
+	vec4 colours[4];
+} tile_t;
+
+typedef struct batch_t {
+	handles_t handles;
+	unsigned int n;
+	float *positions;
+	float *texcoords;
+	float *colours;
+} batch_t;
+
+void new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles);
