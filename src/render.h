@@ -25,4 +25,4 @@ typedef struct batch_t {
 	float *colours;
 } batch_t;
 
-void new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles);
+int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles);
