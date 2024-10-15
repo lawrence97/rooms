@@ -3,7 +3,7 @@ CFLAGS=-g -Wall -Wformat
 
 all: ./bin/main
 
-./bin/main: ./bin/main.o ./bin/shader.o ./bin/render.o ./bin/texture.o
+./bin/main: ./bin/main.o ./bin/shader.o ./bin/batch.o ./bin/texture.o
 	$(CC) -o $@ $^ -L./lib/ -lglad -lglfw3 -lgdi32
 
 ./bin/%.o: ./src/%.c

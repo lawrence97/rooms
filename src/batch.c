@@ -2,22 +2,19 @@
 
 #include <stdlib.h>
 
-#include "render.h"
+#include "batch.h"
 
-vec3 blueprint_pos[6] = {
+vec3 templates[6] = {
 	{-1.0f, 1.0f, 0.0f},  {1.0f, 1.0f, 0.0f},  {-1.0f, -1.0f, 0.0f},
 	{-1.0f, -1.0f, 0.0f}, {1.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
 };
 
-vec2 blueprint_tex[6] = {
-	{-1.0f, 1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f},
-};
-
 int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles) {
 	batch->n = ntiles;
-	unsigned int size_p = ntiles * 6 * 3 * sizeof(float);
-	unsigned int size_t = ntiles * 6 * 2 * sizeof(float);
-	unsigned int size_c = ntiles * 6 * 4 * sizeof(float);
+	unsigned int component_multiplier = ntiles * 6 * sizeof(float);
+	unsigned int size_p = component_multiplier * 3;
+	unsigned int size_t = component_multiplier * 2;
+	unsigned int size_c = component_multiplier * 4;
 
 	float *p_buffer = (float *)malloc(size_p);
 	if (p_buffer == NULL) {
@@ -25,16 +22,18 @@ int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles) {
 	}
 	float *t_buffer = (float *)malloc(size_t);
 	if (t_buffer == NULL) {
+		free(p_buffer);
 		return -1;
 	}
 	float *c_buffer = (float *)malloc(size_c);
 	if (c_buffer == NULL) {
+		free(p_buffer);
+		free(t_buffer);
 		return -1;
 	}
 
 	tile_t t = {0};
-	vec3 b = {0};
-	vec2 bt = {0};
+	vec3 template = {0};
 	vec3 nth = {0};
 	vec2 ntht = {0};
 
@@ -71,21 +70,20 @@ int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles) {
 		colours[5] = t.colours[1];
 
 		for (int m = 0; m < 6; m++) {
-			b = blueprint_pos[m];
-			bt = blueprint_tex[m];
+			template = templates[m];
 
 			nth = o;
-			nth.x1 += .5f * dx * b.x1;
-			nth.x2 += .5f * dy * b.x2;
-			nth.x3 += .5f * dz * b.x3;
+			nth.x1 += .5f * dx * template.x1;
+			nth.x2 += .5f * dy * template.x2;
+			nth.x3 += .5f * dz * template.x3;
 
 			p_buffer[p_offset + (m * 3) + 0] = nth.x1;
 			p_buffer[p_offset + (m * 3) + 1] = nth.x2;
 			p_buffer[p_offset + (m * 3) + 2] = nth.x3;
 
 			ntht = ot;
-			ntht.x1 += .5f * dxt * bt.x1;
-			ntht.x2 += .5f * dyt * bt.x2;
+			ntht.x1 += .5f * dxt * template.x1;
+			ntht.x2 += .5f * dyt * template.x2;
 
 			t_buffer[t_offset + (m * 2) + 0] = ntht.x1;
 			t_buffer[t_offset + (m * 2) + 1] = ntht.x2;
@@ -102,9 +100,9 @@ int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles) {
 	batch->colours = c_buffer;
 
 	glGenVertexArrays(1, &batch->handles.vao);
-	glGenBuffers(1, &batch->handles.pbo);
-	glGenBuffers(1, &batch->handles.tbo);
-	glGenBuffers(1, &batch->handles.cbo);
+	GLuint *array_handles[3] = {(GLuint *)&batch->handles.pbo, (GLuint *)&batch->handles.tbo,
+								(GLuint *)&batch->handles.cbo};
+	glGenBuffers(3, *array_handles);
 
 	glBindVertexArray(batch->handles.vao);
 

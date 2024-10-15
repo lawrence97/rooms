@@ -1,6 +1,6 @@
 #pragma once
 
-#include "maths.h"
+#include "vector.h"
 
 typedef struct handles_t {
 	unsigned int vao;

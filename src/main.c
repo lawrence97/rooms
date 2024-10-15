@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "maths.h"
-#include "render.h"
+#include "batch.h"
 #include "shader.h"
 #include "texture.h"
+#include "vector.h"
 
 #define WIDTH 640
 #define HEIGHT 640
