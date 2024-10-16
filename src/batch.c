@@ -3,15 +3,20 @@
 #include <stdlib.h>
 
 #include "batch.h"
+#include "blueprint.h"
 
 vec3 templates[6] = {
 	{-1.0f, 1.0f, 0.0f},  {1.0f, 1.0f, 0.0f},  {-1.0f, -1.0f, 0.0f},
 	{-1.0f, -1.0f, 0.0f}, {1.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
 };
 
-int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles) {
-	batch->n = ntiles;
-	unsigned int component_multiplier = ntiles * 6 * sizeof(float);
+int new_batch(batch_t *batch, blueprint_t *blueprint) {
+
+	unsigned int num = blueprint->n;
+	tile_t *tiles = blueprint->tiles;
+
+	batch->n = blueprint->n;
+	unsigned int component_multiplier = num * 6 * sizeof(float);
 	unsigned int size_p = component_multiplier * 3;
 	unsigned int size_t = component_multiplier * 2;
 	unsigned int size_c = component_multiplier * 4;
@@ -47,7 +52,7 @@ int new_batch(batch_t *batch, tile_t *tiles, unsigned int ntiles) {
 	int t_offset = 0;
 	int c_offset = 0;
 
-	for (int n = 0; n < ntiles; n++) {
+	for (int n = 0; n < num; n++) {
 		t = tiles[n];
 
 		o = t.origin_pos;

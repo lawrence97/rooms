@@ -4,11 +4,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "batch.h"
+#include "blueprint.h"
 #include "shader.h"
 #include "texture.h"
-#include "vector.h"
 
 #define WIDTH 640
 #define HEIGHT 640
@@ -17,6 +18,8 @@ int main() {
 
 	int width = WIDTH;
 	int height = HEIGHT;
+
+	srand(time(NULL));
 
 	if (glfwInit() == 0) {
 		printf("error - glfw stage.\n");
@@ -61,37 +64,30 @@ int main() {
 	}
 	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 
-	vec3 centre = {.0f, .0f, .0f};
-	vec3 lower_right = {100.0f, -100.0f, .0f};
-	vec3 lower_left = {-100.0f, -100.0f, .0f};
-	vec2 tile1_index = {.75f, .25f};
-	vec2 tile2_index = {.25f, .25f};
-	vec2 tile_dim = {16.0f, 16.0f};
-	vec2 tile_larger_dim = {32.0f, 32.0f};
-	vec2 tex_dim = {.5f, .5f};
-	vec4 white_c = {1.0f, 1.0f, 1.0f, 1.0f};
-	vec4 yellow_c = {1.0f, 1.0f, 0.0f, 1.0f};
-	vec4 green_c = {0.0f, 1.0f, 1.0f, 1.0f};
-	vec4 blue_c = {0.0f, 0.0f, 1.0f, 1.0f};
+	blueprint_t blueprint1;
+	new_blueprint(&blueprint1, 10);
 
-	tile_t t1 = {centre, tile_dim, tile1_index, tex_dim, {yellow_c, yellow_c, yellow_c, green_c}};
-	tile_t t2 = {lower_right, tile_dim, tile1_index, tex_dim, {white_c, white_c, white_c, white_c}};
-	tile_t t3 = {lower_left, tile_larger_dim, tile2_index, tex_dim, {green_c, blue_c, green_c, blue_c}};
-
-	tile_t tiles[3] = {t1, t2, t3};
 	batch_t batch1;
-	if (new_batch(&batch1, tiles, 3) < 0) {
-		printf("error - batch stage.\n");
-		glDeleteProgram(program);
-		glDeleteTextures(1, &texture1.handle);
-		glfwDestroyWindow(window);
-		return -1;
-	}
+	new_batch(&batch1, &blueprint1);
+
+	blueprint_t blueprint2;
+	new_blueprint(&blueprint2, 16);
+
+	batch_t batch2;
+	new_batch(&batch2, &blueprint2);
 
 	unsigned int n_batches = 0;
-	batch_t *batches[1];
+	batch_t *batches[2];
+
 	batches[0] = &batch1;
 	n_batches++;
+	free(blueprint1.tiles);
+	blueprint1.tiles = NULL;
+
+	batches[1] = &batch2;
+	n_batches++;
+	free(blueprint2.tiles);
+	blueprint2.tiles = NULL;
 
 	glUseProgram(program);
 	glBindTexture(GL_TEXTURE_2D, texture1.handle);
