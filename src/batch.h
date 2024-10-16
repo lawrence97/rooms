@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blueprint.h"
+#include "construct.h"
 
 typedef struct handles_t {
 	unsigned int vao;
@@ -17,4 +17,4 @@ typedef struct batch_t {
 	float *colours;
 } batch_t;
 
-int new_batch(batch_t *batch, blueprint_t *blueprint);
+int new_batch(batch_t *batch, construct_t *construct);

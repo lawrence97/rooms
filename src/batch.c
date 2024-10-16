@@ -3,19 +3,19 @@
 #include <stdlib.h>
 
 #include "batch.h"
-#include "blueprint.h"
+#include "construct.h"
 
 vec3 templates[6] = {
 	{-1.0f, 1.0f, 0.0f},  {1.0f, 1.0f, 0.0f},  {-1.0f, -1.0f, 0.0f},
 	{-1.0f, -1.0f, 0.0f}, {1.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
 };
 
-int new_batch(batch_t *batch, blueprint_t *blueprint) {
+int new_batch(batch_t *batch, construct_t *construct) {
 
-	unsigned int num = blueprint->n;
-	tile_t *tiles = blueprint->tiles;
+	unsigned int num = construct->n;
+	tile_t *tiles = construct->tiles;
 
-	batch->n = blueprint->n;
+	batch->n = construct->n;
 	unsigned int component_multiplier = num * 6 * sizeof(float);
 	unsigned int size_p = component_multiplier * 3;
 	unsigned int size_t = component_multiplier * 2;
@@ -55,13 +55,13 @@ int new_batch(batch_t *batch, blueprint_t *blueprint) {
 	for (int n = 0; n < num; n++) {
 		t = tiles[n];
 
-		o = t.origin_pos;
-		dx = t.dim_pos.x1;
-		dy = t.dim_pos.x2;
+		o = t.coord;
+		dx = t.dimension.x1;
+		dy = t.dimension.x2;
 
-		ot = t.origin_tex;
-		dxt = t.dim_tex.x1;
-		dyt = t.dim_tex.x2;
+		ot = t.coord_tex;
+		dxt = t.dimension_tex.x1;
+		dyt = t.dimension_tex.x2;
 
 		p_offset = n * 6 * 3;
 		t_offset = n * 6 * 2;

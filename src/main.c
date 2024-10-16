@@ -7,7 +7,7 @@
 #include <time.h>
 
 #include "batch.h"
-#include "blueprint.h"
+#include "construct.h"
 #include "shader.h"
 #include "texture.h"
 
@@ -64,30 +64,44 @@ int main() {
 	}
 	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 
-	blueprint_t blueprint1;
-	new_blueprint(&blueprint1, 10);
-
-	batch_t batch1;
-	new_batch(&batch1, &blueprint1);
-
-	blueprint_t blueprint2;
-	new_blueprint(&blueprint2, 16);
-
-	batch_t batch2;
-	new_batch(&batch2, &blueprint2);
-
 	unsigned int n_batches = 0;
-	batch_t *batches[2];
+	batch_t *batches[4];
 
-	batches[0] = &batch1;
+	construct_t c1;
+	batch_t b1;
+	new_construct(&c1);
+	new_batch(&b1, &c1);
+	batches[0] = &b1;
 	n_batches++;
-	free(blueprint1.tiles);
-	blueprint1.tiles = NULL;
+	free(c1.tiles);
+	c1.tiles = NULL;
 
-	batches[1] = &batch2;
+	construct_t c2;
+	batch_t b2;
+	new_construct(&c2);
+	new_batch(&b2, &c2);
+	batches[1] = &b2;
 	n_batches++;
-	free(blueprint2.tiles);
-	blueprint2.tiles = NULL;
+	free(c2.tiles);
+	c2.tiles = NULL;
+
+	construct_t c3;
+	batch_t b3;
+	new_construct(&c3);
+	new_batch(&b3, &c3);
+	batches[2] = &b3;
+	n_batches++;
+	free(c3.tiles);
+	c3.tiles = NULL;
+
+	construct_t c4;
+	batch_t b4;
+	new_construct(&c4);
+	new_batch(&b4, &c4);
+	batches[3] = &b4;
+	n_batches++;
+	free(c4.tiles);
+	c4.tiles = NULL;
 
 	glUseProgram(program);
 	glBindTexture(GL_TEXTURE_2D, texture1.handle);
