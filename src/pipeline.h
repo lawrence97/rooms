@@ -13,8 +13,8 @@ typedef struct pipeline_t {
 
 int new_pipeline(pipeline_t *p);
 
-int send_pipeline(pipeline_t *p, construct_t *c);
+void send_pipeline(pipeline_t *p, construct_t *c);
 
-int upload_pipeline(pipeline_t *p, batch_t *b);
+void upload_pipeline(pipeline_t *p, batch_t *b);
 
-int free_pipeline(pipeline_t *p);
+void free_pipeline(pipeline_t *p);

@@ -10,16 +10,24 @@ typedef struct tile_t {
 	vec4 colour;
 } tile_t;
 
+typedef struct debug_t {
+	int enabled;
+	vec2 centre;
+	vec2 open;
+	vec2 close;
+} debug_t;
+
 typedef struct construct_t {
 	unsigned int capacity_tile;
 	unsigned int n_tile;
 	tile_t *tiles;
+	debug_t debug;
 } construct_t;
 
 int new_construct(construct_t *c);
 
-int update_construct(construct_t *c);
+void update_construct(construct_t *c);
 
-int free_construct(construct_t *c);
+void free_construct(construct_t *c);
 
 int rand_int(int min, int max);

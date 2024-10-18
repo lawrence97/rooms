@@ -14,7 +14,7 @@
 
 #define WIDTH 640
 #define HEIGHT 640
-#define SCENE_SIZE 5
+#define SCENE_SIZE 6
 
 int main() {
 
@@ -58,8 +58,6 @@ int main() {
 		printf("error - texture load.\n");
 		return -1;
 	}
-	glBindTexture(GL_TEXTURE0, texture1.handle);
-	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 
 	pipeline_t pipeline;
 	construct_t construct;
@@ -72,8 +70,15 @@ int main() {
 		return -1;
 	}
 
-	new_pipeline(&pipeline);
-	new_construct(&construct);
+	if (new_pipeline(&pipeline) < 0) {
+		printf("error - new pipeline.\n");
+		return -1;
+	};
+	if (new_construct(&construct) < 0) {
+		printf("error - new construct.\n");
+		return -1;
+	};
+
 	scene.pipeline = &pipeline;
 	scene.construct = &construct;
 
@@ -86,7 +91,10 @@ int main() {
 		scene.n_batches++;
 	}
 
+	glBindTexture(GL_TEXTURE0, texture1.handle);
+	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 	glUseProgram(program);
+	glUniform2f(glGetUniformLocation(program, "window_scale"), width * .5f, height * .5f);
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(window)) {
@@ -108,12 +116,9 @@ int main() {
 	free_pipeline(&pipeline);
 
 	for (int i = 0; i < scene.n_batches; i++) {
-		GLuint vao = scene.batches[i].handles.vao;
-		GLuint pbo = scene.batches[i].handles.pbo;
-		GLuint tbo = scene.batches[i].handles.tbo;
-		GLuint cbo = scene.batches[i].handles.cbo;
-		GLuint buffers[3] = {pbo, tbo, cbo};
-		glDeleteVertexArrays(1, &vao);
+		handles_t handles = scene.batches[i].handles;
+		GLuint buffers[3] = {handles.pbo, handles.tbo, handles.cbo};
+		glDeleteVertexArrays(1, &handles.vao);
 		glDeleteBuffers(3, buffers);
 	}
 	free(scene.batches);
