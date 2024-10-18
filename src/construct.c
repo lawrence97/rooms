@@ -2,82 +2,73 @@
 
 #include "construct.h"
 
-int new_construct(construct_t *construct) {
+int new_construct(construct_t *c) {
+	c->n_tile = 0;
+	c->capacity_tile = 10;
 
-	unsigned int n = rand_int(5, 15);
-	construct->n = n;
-	construct->tiles = (tile_t *)malloc(n * sizeof(tile_t));
-	if (construct->tiles == NULL) {
+	c->tiles = (tile_t *)calloc(c->capacity_tile, sizeof(tile_t));
+	if (c->tiles == NULL) {
+		c->capacity_tile = 0;
 		return -1;
 	}
+	return 0;
+}
 
-	int rn_x = rand_int(-200, 200);
-	int rn_y = rand_int(-200, 200);
-	construct->centre = (vec3){rn_x, rn_y, 1.0f};
+int update_construct(construct_t *c) {
 
-	float boundary_step = 16.0f;
-	int rn_d = 0;
-	float dist = 0;
+	c->n_tile = 0;
 
-	rn_d = rand_int(4, 12);
-	dist = rn_d * boundary_step;
-	construct->bounds[0].x1 = construct->centre.x1 - dist;
-	construct->bounds[0].x2 = construct->centre.x2 + dist;
+	unsigned int n = rand_int(6, 10);
+	float dim = 16.0f;
+	float dim_texture = .5f;
 
-	rn_d = rand_int(4, 12);
-	dist = rn_d * boundary_step;
-	construct->bounds[1].x1 = construct->centre.x1 + dist;
-	construct->bounds[1].x2 = construct->centre.x2 + dist;
+	vec4 red = {1.0f, 0.0f, 0.0f, 1.0f};
+	vec4 green = {0.0f, 1.0f, 0.0f, 1.0f};
+	vec4 blue = {0.0f, 0.0f, 1.0f, 1.0f};
+	vec4 range[3] = {red, green, blue};
 
-	rn_d = rand_int(4, 12);
-	dist = rn_d * boundary_step;
-	construct->bounds[2].x1 = construct->centre.x1 - dist;
-	construct->bounds[2].x2 = construct->centre.x2 - dist;
+	float x = (float)rand_int(-280, 280);
+	float y = (float)rand_int(-280, 280);
 
-	rn_d = rand_int(4, 12);
-	dist = rn_d * boundary_step;
-	construct->bounds[3].x1 = construct->centre.x1 + dist;
-	construct->bounds[3].x2 = construct->centre.x2 - dist;
-
-	// temp textures centres
-	vec2 tex_1 = {.25f, .25f};
-	vec2 tex_2 = {.75f, .25f};
-	vec2 tex_3 = {.25f, .75f};
-	vec2 tex_4 = {.75f, .75f};
-
-	// temp colours
-	vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
-	vec4 red = {1.0f, .0f, .0f, 1.0f};
-	vec4 green = {.0f, 1.0f, .0f, 1.0f};
-	vec4 blue = {.0f, .0f, 1.0f, 1.0f};
-
-	vec4 colour_range[4] = {white, red, green, blue};
-	vec2 texture_range[4] = {tex_1, tex_2, tex_3, tex_4};
+	vec2 centre = {x, y};
 
 	for (int i = 0; i < n; i++) {
 
-		tile_t *tsel = (construct->tiles + i);
-		vec4 sel_col = colour_range[rand_int(0, 3)];
-		vec2 sel_tex = texture_range[rand_int(0, 3)];
+		float ox = (float)rand_int(-1, 1) * 16.0f;
+		float oy = (float)rand_int(-1, 1) * 16.0f;
 
-		tsel->colours[0] = sel_col;
-		tsel->colours[1] = sel_col;
-		tsel->colours[2] = sel_col;
-		tsel->colours[3] = sel_col;
+		vec2 offset = {ox, oy};
+		vec2 centre_texture = {.75f, .25f};
 
-		tsel->dimension.x1 = 16.0f;
-		tsel->dimension.x2 = 16.0f;
+		int picker = rand_int(0, 2);
+		c->tiles[i].colour = range[picker];
 
-		tsel->dimension_tex.x1 = .5f;
-		tsel->dimension_tex.x2 = .5f;
+		c->tiles[i].dimension.x1 = dim;
+		c->tiles[i].dimension.x2 = dim;
 
-		tsel->coord = construct->centre;
-		tsel->coord.x1 += rand_int(-2, 2) * 16.0f;
-		tsel->coord.x2 += rand_int(-2, 2) * 16.0f;
+		c->tiles[i].dimension_texture.x1 = dim_texture;
+		c->tiles[i].dimension_texture.x2 = dim_texture;
 
-		tsel->coord_tex = sel_tex;
+		c->tiles[i].offset.x1 = centre.x1 + offset.x1;
+		c->tiles[i].offset.x2 = centre.x2 + offset.x2;
+
+		c->tiles[i].offset_texture.x1 = centre_texture.x1;
+		c->tiles[i].offset_texture.x2 = centre_texture.x2;
+
+		c->n_tile++;
 	}
 
+	return 0;
+}
+
+int free_construct(construct_t *c) {
+
+	if (c->tiles != NULL) {
+		free(c->tiles);
+	}
+	c->tiles = NULL;
+	c->n_tile = 0;
+	c->capacity_tile = 0;
 	return 0;
 }
 

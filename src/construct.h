@@ -3,20 +3,23 @@
 #include "vector.h"
 
 typedef struct tile_t {
-	vec3 coord;
+	vec2 offset;
 	vec2 dimension;
-	vec2 coord_tex;
-	vec2 dimension_tex;
-	vec4 colours[4];
+	vec2 offset_texture;
+	vec2 dimension_texture;
+	vec4 colour;
 } tile_t;
 
 typedef struct construct_t {
-	vec3 centre;
-	vec2 bounds[4];
-	unsigned int n;
+	unsigned int capacity_tile;
+	unsigned int n_tile;
 	tile_t *tiles;
 } construct_t;
 
-int new_construct(construct_t *construct);
+int new_construct(construct_t *c);
+
+int update_construct(construct_t *c);
+
+int free_construct(construct_t *c);
 
 int rand_int(int min, int max);

@@ -6,24 +6,24 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "batch.h"
 #include "construct.h"
-#include "debug.h"
+#include "pipeline.h"
+#include "scene.h"
 #include "shader.h"
 #include "texture.h"
 
 #define WIDTH 640
 #define HEIGHT 640
+#define SCENE_SIZE 5
 
 int main() {
 
 	int width = WIDTH;
 	int height = HEIGHT;
-
 	srand(time(NULL));
 
 	if (glfwInit() == 0) {
-		printf("error - glfw stage.\n");
+		printf("error - glfw init.\n");
 		return -1;
 	}
 
@@ -32,15 +32,13 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	GLFWwindow *window = glfwCreateWindow(width, height, "glfw", NULL, NULL);
 	if (window == NULL) {
-		printf("error - window stage.\n");
+		printf("error - glfw window.\n");
 		return -1;
 	}
 
 	glfwMakeContextCurrent(window);
 	if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0) {
-		glfwTerminate();
-		printf("error - glad stage.\n");
-		glfwDestroyWindow(window);
+		printf("error - glad init.\n");
 		return -1;
 	}
 
@@ -48,109 +46,56 @@ int main() {
 	glViewport(0, 0, width, height);
 	glClearColor(.1f, .1f, .1f, 1.0f);
 
-	GLuint program_debug = 0;
-	if (new_program(&program_debug, "./shaders/vert_debug.glsl", "./shaders/frag_debug.glsl") < 0) {
-		printf("error - shader program stage.\n");
-		glfwDestroyWindow(window);
-		return -1;
-	}
-	GLint uni_col_location = glGetUniformLocation(program_debug, "uni_col");
-	float colour_debug_default[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-	glUniform4fv(uni_col_location, 1, colour_debug_default);
-
 	GLuint program = 0;
 	if (new_program(&program, "./shaders/vert.glsl", "./shaders/frag.glsl") < 0) {
-		printf("error - shader program stage.\n");
-		glDeleteProgram(program_debug);
-		glfwDestroyWindow(window);
+		printf("error - shader program.\n");
 		return -1;
 	}
 
 	texture_t texture1 = {"./textures/colour.bmp", 0, 0, 0, GL_REPEAT, GL_NEAREST, GL_LINEAR, GL_BGRA,
 						  GL_UNSIGNED_BYTE};
 	if (new_texture(&texture1) < 0) {
-		printf("error - texture stage.");
-		glDeleteProgram(program);
-		glDeleteProgram(program_debug);
-		glfwDestroyWindow(window);
+		printf("error - texture load.\n");
 		return -1;
 	}
+	glBindTexture(GL_TEXTURE0, texture1.handle);
 	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 
-	unsigned int n_batches = 0;
-	unsigned int n_constructs = 0;
-
-	construct_t c1;
-	batch_t b1;
-	construct_t c2;
-	batch_t b2;
-	construct_t c3;
-	batch_t b3;
-
-	construct_t *constructs[3] = {&c1, &c2, &c3};
-	batch_t *batches[3] = {&b1, &b2, &b3};
-
-	if (new_construct(&c1) < 0 || new_batch(&b1, &c1) < 0) {
-		printf("error - construct or batch stage.");
+	pipeline_t pipeline;
+	construct_t construct;
+	scene_t scene;
+	scene.capacity_batches = SCENE_SIZE;
+	scene.n_batches = 0;
+	scene.batches = (batch_t *)calloc(scene.capacity_batches, sizeof(batch_t));
+	if (scene.batches == NULL) {
+		printf("error - scene init.\n");
 		return -1;
 	}
-	n_constructs++;
-	n_batches++;
 
-	if (new_construct(&c2) < 0 || new_batch(&b2, &c2) < 0) {
-		printf("error - construct or batch stage.");
-		return -1;
-	}
-	n_constructs++;
-	n_batches++;
+	new_pipeline(&pipeline);
+	new_construct(&construct);
+	scene.pipeline = &pipeline;
+	scene.construct = &construct;
 
-	if (new_construct(&c3) < 0 || new_batch(&b3, &c3) < 0) {
-		printf("error - construct or batch stage.");
-		return -1;
+	for (int i = 0; i < scene.capacity_batches; i++) {
+		batch_t b;
+		update_construct(&construct);
+		send_pipeline(&pipeline, &construct);
+		upload_pipeline(&pipeline, &b);
+		scene.batches[i] = b;
+		scene.n_batches++;
 	}
-	n_constructs++;
-	n_batches++;
 
-	debug_t db1;
-	db1.colour[0] = .2f;
-	db1.colour[1] = 1.0f;
-	db1.colour[2] = .5f;
-	db1.colour[3] = 1.0f;
-	if (new_debug(&db1) < 0) {
-		printf("error - new debug stage.");
-		glDeleteProgram(program);
-		glDeleteProgram(program_debug);
-		glfwDestroyWindow(window);
-		return -1;
-	}
-	if (append_debug(&db1, (vec2){constructs[0]->centre.x1, constructs[0]->centre.x2}) < 0 ||
-		append_debug(&db1, (vec2){constructs[1]->centre.x1, constructs[1]->centre.x2}) < 0 ||
-		append_debug(&db1, (vec2){constructs[2]->centre.x1, constructs[2]->centre.x2}) < 0) {
-		printf("error - append debug stage.");
-		glDeleteProgram(program);
-		glDeleteProgram(program_debug);
-		glfwDestroyWindow(window);
-		return -1;
-	}
+	glUseProgram(program);
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(program);
-		glPointSize(1);
-		glBindTexture(GL_TEXTURE_2D, texture1.handle);
-		for (int i = 0; i < n_batches; i++) {
-			glBindVertexArray(batches[i]->handles.vao);
-			glDrawArrays(GL_TRIANGLES, 0, batches[i]->n * 6);
+		for (int i = 0; i < scene.n_batches; i++) {
+			glBindVertexArray(scene.batches[i].handles.vao);
+			glDrawArrays(GL_TRIANGLES, 0, scene.batches[i].n_tiles * 6);
 		}
-
-		glPointSize(7);
-		glUseProgram(program_debug);
-		glUniform4fv(uni_col_location, 1, db1.colour);
-		glBindVertexArray(db1.vao);
-		glDrawArrays(GL_POINTS, 0, db1.n);
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
@@ -159,31 +104,20 @@ int main() {
 	glDeleteTextures(1, &texture1.handle);
 	glDeleteProgram(program);
 
-	for (int i = 0; i < n_batches; i++) {
-		batch_t b = *batches[i];
-		GLuint buffers[3] = {b.handles.pbo, b.handles.tbo, b.handles.cbo};
-		glDeleteVertexArrays(1, &b.handles.vao);
+	free_construct(&construct);
+	free_pipeline(&pipeline);
+
+	for (int i = 0; i < scene.n_batches; i++) {
+		GLuint vao = scene.batches[i].handles.vao;
+		GLuint pbo = scene.batches[i].handles.pbo;
+		GLuint tbo = scene.batches[i].handles.tbo;
+		GLuint cbo = scene.batches[i].handles.cbo;
+		GLuint buffers[3] = {pbo, tbo, cbo};
+		glDeleteVertexArrays(1, &vao);
 		glDeleteBuffers(3, buffers);
-		free(b.positions);
-		b.positions = NULL;
-		free(b.texcoords);
-		b.texcoords = NULL;
-		free(b.colours);
-		b.colours = NULL;
 	}
-
-	for (int i = 0; i < n_constructs; i++) {
-		construct_t c = *constructs[i];
-		free(c.tiles);
-		c.tiles = NULL;
-	}
-
-	glDeleteVertexArrays(1, &db1.vao);
-	glDeleteBuffers(1, &db1.vbo);
-	free(db1.points);
-	db1.points = NULL;
-
-	glfwDestroyWindow(window);
+	free(scene.batches);
+	scene.batches = NULL;
 
 	return 0;
 }

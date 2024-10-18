@@ -1,7 +1,5 @@
 #pragma once
 
-#include "construct.h"
-
 typedef struct handles_t {
 	unsigned int vao;
 	unsigned int pbo;
@@ -11,10 +9,5 @@ typedef struct handles_t {
 
 typedef struct batch_t {
 	handles_t handles;
-	unsigned int n;
-	float *positions;
-	float *texcoords;
-	float *colours;
+	unsigned int n_tiles;
 } batch_t;
-
-int new_batch(batch_t *batch, construct_t *construct);
