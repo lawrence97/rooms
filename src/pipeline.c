@@ -4,7 +4,7 @@
 
 #include "pipeline.h"
 
-#define CAPACITY_BUFFER 13;
+#define CAPACITY_BUFFER 100 + 3;
 
 vec2 template_quad_multipliers[6] = {
 	{-1.0f, 1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f},
