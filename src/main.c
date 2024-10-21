@@ -82,9 +82,19 @@ int main() {
 	scene.pipeline = &pipeline;
 	scene.construct = &construct;
 
+	construct_opts construct_options;
+	construct_options.prev_centre = (vec2){.0f, .0f};
+	construct_options.prev_entry = (vec2){.0f, .0f};
+	construct_options.prev_exit = (vec2){.0f, .0f};
+	construct_options.prev_dim = (vec2){16.0f, 16.0f};
+	construct_options.prev_tile_count = 0;
+	construct_options.prev_theta = 0.0;
+
+	unsigned int order = 0;
+
 	for (int i = 0; i < scene.capacity_batches; i++) {
 		batch_t b;
-		update_construct(&construct);
+		update_construct(&construct, &construct_options, &order);
 		send_pipeline(&pipeline, &construct);
 		upload_pipeline(&pipeline, &b);
 		scene.batches[i] = b;

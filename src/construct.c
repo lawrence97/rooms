@@ -1,3 +1,5 @@
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "construct.h"
@@ -19,7 +21,16 @@ int new_construct(construct_t *c) {
 	return 0;
 }
 
-void update_construct(construct_t *c) {
+void update_construct(construct_t *c, construct_opts *opts, unsigned int *order) {
+
+	int n = rand_int(3, 6);
+	double theta = opts->prev_theta + (M_PI * .25f);
+	float new_radius = (n * .5f) * 16.0f;
+	new_radius += (n * 16.0f);
+	float new_x = new_radius * (cos(theta));
+	float new_y = new_radius * (sin(theta));
+	float x = opts->prev_exit.x1 + new_x;
+	float y = opts->prev_exit.x2 + new_y;
 
 	c->debug.enabled = 1;
 
@@ -40,10 +51,6 @@ void update_construct(construct_t *c) {
 	float dim = 16.0f;
 	float dim_texture = .5f;
 
-	int n = rand_int(5, 10);
-
-	float x = (float)rand_int(-280, 280);
-	float y = (float)rand_int(-280, 280);
 	vec2 centre = {x, y};
 
 	vec2 anchor;
@@ -103,6 +110,24 @@ void update_construct(construct_t *c) {
 	int chosen_face = 0;
 	int chosen_door = rand_int(0, n - 2 - 1);
 
+	float dx = centre.x1 - opts->prev_exit.x1;
+	float dy = centre.x2 - opts->prev_exit.x2;
+	float adx = fabs(centre.x1 - opts->prev_exit.x1);
+	float ady = fabs(centre.x2 - opts->prev_exit.x2);
+	if (ady >= adx) {
+		if (dy < 0) {
+			chosen_direction = 2;
+		} else {
+			chosen_direction = 3;
+		}
+	} else {
+		if (dx < 0) {
+			chosen_direction = 0;
+		} else {
+			chosen_direction = 1;
+		}
+	}
+
 	int entry = directions[chosen_direction][chosen_face][chosen_door];
 
 	chosen_face++;
@@ -143,6 +168,14 @@ void update_construct(construct_t *c) {
 		c->tiles[ndb].offset = debug_points[m];
 		c->n_tile++;
 	}
+
+	// update contruct opts for next
+	opts->prev_centre = centre;
+	opts->prev_dim = (vec2){dim, dim};
+	opts->prev_entry = c->tiles[entry].offset;
+	opts->prev_exit = c->tiles[exit].offset;
+	opts->prev_tile_count = n * n;
+	opts->prev_theta = theta;
 
 	return;
 }
