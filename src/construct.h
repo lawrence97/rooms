@@ -13,8 +13,8 @@ typedef struct tile_t {
 typedef struct debug_t {
 	int enabled;
 	vec2 centre;
-	vec2 open;
-	vec2 close;
+	vec2 entry;
+	vec2 exit;
 } debug_t;
 
 typedef struct construct_t {

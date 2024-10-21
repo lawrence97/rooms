@@ -40,10 +40,7 @@ void update_construct(construct_t *c) {
 	float dim = 16.0f;
 	float dim_texture = .5f;
 
-	float n = rand_int(5, 10);
-
-	int open_index = rand_int(1, n - 2);
-	int close_index = (n * n) - rand_int(2, n - 1);
+	int n = rand_int(5, 10);
 
 	float x = (float)rand_int(-280, 280);
 	float y = (float)rand_int(-280, 280);
@@ -60,48 +57,85 @@ void update_construct(construct_t *c) {
 		for (int j = 0; j < n; j++) {
 			active.x1 = anchor.x1 + (j * dim);
 
-			c->tiles[(i * (int)n) + j].offset = active;
-			c->tiles[(i * (int)n) + j].dimension = (vec2){dim, dim};
-			c->tiles[(i * (int)n) + j].dimension_texture = (vec2){dim_texture, dim_texture};
-
-			int texture_picker;
-			if (index == open_index || index == close_index) {
-				texture_picker = 0;
-			} else {
-				texture_picker = 1;
-			}
-			c->tiles[(i * (int)n) + j].offset_texture = range_textures[texture_picker];
-
-			int colour_picker;
-			if (index == open_index || index == close_index) {
-				colour_picker = 1;
-			} else {
-				colour_picker = 3;
-			}
-			c->tiles[(i * (int)n) + j].colour = range_colours[colour_picker];
+			c->tiles[(i * n) + j].offset = active;
+			c->tiles[(i * n) + j].dimension = (vec2){dim, dim};
+			c->tiles[(i * n) + j].dimension_texture = (vec2){dim_texture, dim_texture};
+			c->tiles[(i * n) + j].offset_texture = range_textures[1];
+			c->tiles[(i * n) + j].colour = range_colours[3];
 
 			c->n_tile++;
 			index++;
 		}
 	}
 
+	// north face
+	int doors_north[n - 2];
+	for (int i = 0; i < n - 2; i++) {
+		doors_north[i] = (i + 1);
+	}
+
+	// south face
+	int doors_south[n - 2];
+	for (int i = 0; i < n - 2; i++) {
+		doors_south[i] = ((n * n) - 2) - i;
+	}
+
+	// west face
+	int doors_west[n - 2];
+	for (int i = 0; i < n - 2; i++) {
+		doors_west[i] = (1 + i) * n;
+	}
+
+	// east face
+	int doors_east[n - 2];
+	for (int i = 0; i < n - 2; i++) {
+		doors_east[i] = (n * n) - 1 - (n * (i + 1));
+	}
+
+	int *east_west[2] = {doors_east, doors_west};
+	int *west_east[2] = {doors_west, doors_east};
+	int *north_south[2] = {doors_north, doors_south};
+	int *south_north[2] = {doors_south, doors_north};
+
+	int **directions[4] = {east_west, west_east, north_south, south_north};
+
+	int chosen_direction = rand_int(0, 3);
+	int chosen_face = 0;
+	int chosen_door = rand_int(0, n - 2 - 1);
+
+	int entry = directions[chosen_direction][chosen_face][chosen_door];
+
+	chosen_face++;
+	chosen_door = rand_int(0, n - 2 - 1);
+
+	int exit = directions[chosen_direction][chosen_face][chosen_door];
+
+	c->tiles[entry].colour = range_colours[2];
+	c->tiles[exit].colour = range_colours[0];
+
+	// debug points
 	if (c->debug.enabled != 1) {
 		return;
 	}
 
-	float scale_debug = .5f;
+	float scale_debug = .4f;
 	vec2 texture_debug = range_textures[0];
 	vec4 magenta = {1.0f, 0.0f, 1.0f, 1.0f};
+	vec4 yellow = {1.0f, 1.0f, 0.0f, 1.0f};
 
 	c->debug.centre = centre;
-	c->debug.open = c->tiles[open_index].offset;
-	c->debug.close = c->tiles[close_index].offset;
+	c->debug.entry = c->tiles[entry].offset;
+	c->debug.exit = c->tiles[exit].offset;
 
-	vec2 debug_points[3] = {c->debug.centre, c->debug.open, c->debug.close};
+	vec2 debug_points[3] = {c->debug.centre, c->debug.entry, c->debug.exit};
 
 	for (int m = 0; m < 3; m++) {
 		int ndb = c->n_tile;
-		c->tiles[ndb].colour = magenta;
+		if (m == 0) {
+			c->tiles[ndb].colour = magenta;
+		} else {
+			c->tiles[ndb].colour = yellow;
+		}
 		c->tiles[ndb].dimension = (vec2){dim * scale_debug, dim * scale_debug};
 		c->tiles[ndb].dimension_texture = (vec2){dim_texture};
 		c->tiles[ndb].offset_texture = texture_debug;
