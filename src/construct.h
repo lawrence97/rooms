@@ -18,12 +18,14 @@ typedef struct debug_t {
 } debug_t;
 
 typedef struct construct_opts {
-	vec2 prev_centre;
-	vec2 prev_entry;
-	vec2 prev_exit;
-	vec2 prev_dim;
-	unsigned int prev_tile_count;
-	double prev_theta;
+	vec2 centre;
+	vec2 entry;
+	vec2 exit;
+	vec2 dim;
+	vec2 dim_texture;
+	unsigned int n;
+	float radius;
+	double theta;
 } construct_opts;
 
 typedef struct construct_t {
@@ -35,7 +37,7 @@ typedef struct construct_t {
 
 int new_construct(construct_t *c);
 
-void update_construct(construct_t *c, construct_opts *opts, unsigned int *order);
+void update_construct(construct_t *c, construct_opts *prev, construct_opts *next);
 
 void free_construct(construct_t *c);
 

@@ -7,6 +7,9 @@
 #define CONSTRUCT_CAPACITY 100
 #define DEBUG_POINTS_SIZE 3
 
+#define RADIUS_EXTENSION 1.2
+#define THETA_CHANGE_RANGE 0.1
+
 int new_construct(construct_t *c) {
 
 	unsigned int buffer_full_capacity = CONSTRUCT_CAPACITY + DEBUG_POINTS_SIZE;
@@ -21,16 +24,19 @@ int new_construct(construct_t *c) {
 	return 0;
 }
 
-void update_construct(construct_t *c, construct_opts *opts, unsigned int *order) {
+void update_construct(construct_t *c, construct_opts *prev, construct_opts *next) {
 
-	int n = rand_int(3, 6);
-	double theta = opts->prev_theta + (M_PI * .25f);
-	float new_radius = (n * .5f) * 16.0f;
-	new_radius += (n * 16.0f);
-	float new_x = new_radius * (cos(theta));
-	float new_y = new_radius * (sin(theta));
-	float x = opts->prev_exit.x1 + new_x;
-	float y = opts->prev_exit.x2 + new_y;
+	int n = rand_int(3, 8);
+	float dim = 16.0f;
+	float dim_texture = .5f;
+	double theta = prev->theta + ((rand_int(-5, 5))*THETA_CHANGE_RANGE * M_PI);
+	float radius = sqrt(2.0f * (n * .5f) * dim) + (n * dim * RADIUS_EXTENSION);
+	float dx = radius * cos(theta);
+	;
+	float dy = radius * sin(theta);
+	vec2 centre;
+	centre.x1 = prev->exit.x1 + dx;
+	centre.x2 = prev->exit.x2 + dy;
 
 	c->debug.enabled = 1;
 
@@ -48,14 +54,9 @@ void update_construct(construct_t *c, construct_opts *opts, unsigned int *order)
 	vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
 	vec4 range_colours[4] = {red, green, blue, white};
 
-	float dim = 16.0f;
-	float dim_texture = .5f;
-
-	vec2 centre = {x, y};
-
 	vec2 anchor;
-	anchor.x1 = x - (n * .5f * dim) + (dim * .5f);
-	anchor.x2 = y + (n * .5f * 16.0f) - (dim * .5f);
+	anchor.x1 = centre.x1 - (n * .5f * dim) + (dim * .5f);
+	anchor.x2 = centre.x2 + (n * .5f * 16.0f) - (dim * .5f);
 
 	int index = 0;
 	for (int i = 0; i < n; i++) {
@@ -110,10 +111,8 @@ void update_construct(construct_t *c, construct_opts *opts, unsigned int *order)
 	int chosen_face = 0;
 	int chosen_door = rand_int(0, n - 2 - 1);
 
-	float dx = centre.x1 - opts->prev_exit.x1;
-	float dy = centre.x2 - opts->prev_exit.x2;
-	float adx = fabs(centre.x1 - opts->prev_exit.x1);
-	float ady = fabs(centre.x2 - opts->prev_exit.x2);
+	float adx = fabs(dx);
+	float ady = fabs(dy);
 	if (ady >= adx) {
 		if (dy < 0) {
 			chosen_direction = 2;
@@ -169,13 +168,14 @@ void update_construct(construct_t *c, construct_opts *opts, unsigned int *order)
 		c->n_tile++;
 	}
 
-	// update contruct opts for next
-	opts->prev_centre = centre;
-	opts->prev_dim = (vec2){dim, dim};
-	opts->prev_entry = c->tiles[entry].offset;
-	opts->prev_exit = c->tiles[exit].offset;
-	opts->prev_tile_count = n * n;
-	opts->prev_theta = theta;
+	next->centre = centre;
+	next->dim = (vec2){dim};
+	next->dim_texture = (vec2){dim_texture};
+	next->entry = c->tiles[entry].offset;
+	next->exit = c->tiles[exit].offset;
+	next->n = n;
+	next->radius = radius;
+	next->theta = theta;
 
 	return;
 }
