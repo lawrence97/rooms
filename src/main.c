@@ -15,6 +15,7 @@
 #define WIDTH 640
 #define HEIGHT 640
 #define SCENE_SIZE 6
+#define SCENE_INTERVAL 0.05
 
 int main() {
 
@@ -64,7 +65,8 @@ int main() {
 	scene_t scene;
 	scene.capacity_batches = SCENE_SIZE;
 	scene.n_batches = 0;
-	scene.batches = (batch_t *)calloc(scene.capacity_batches, sizeof(batch_t));
+	batch_t batch_buffer[SCENE_SIZE];
+	scene.batches = batch_buffer;
 	if (scene.batches == NULL) {
 		printf("error - scene init.\n");
 		return -1;
@@ -79,57 +81,46 @@ int main() {
 		return -1;
 	};
 
-	scene.pipeline = &pipeline;
-	scene.construct = &construct;
-
-	construct_opts prev;
+	construct_opts prev = {.dim = (vec2){16.0f, 16.0f}, .dim_texture = (vec2){.5f, .5f}};
 	construct_opts next;
 
-	vec2 lower = (vec2){0.0f, -290.0f};
-	vec2 origin = (vec2){0.0f, 0.0f};
-	prev.centre = origin;
-	prev.entry = origin;
-	prev.exit = origin;
-	prev.dim = (vec2){16.0f, 16.0f};
-	prev.dim_texture = (vec2){.5f, .5f};
-	prev.n = 0;
-	prev.radius = 0;
-	prev.theta = 0.0;
-
-	for (int i = 0; i < scene.capacity_batches; i++) {
-
-		batch_t b;
-		update_construct(&construct, &prev, &next);
-
-		prev.entry = next.entry;
-		prev.exit = next.exit;
-		prev.dim = next.dim;
-		prev.dim_texture = next.dim_texture;
-		prev.n = next.n;
-		prev.radius = next.radius;
-		prev.theta = next.theta;
-
-		send_pipeline(&pipeline, &construct);
-		upload_pipeline(&pipeline, &b);
-		scene.batches[i] = b;
-		scene.n_batches++;
-	}
+	scene.pipeline = &pipeline;
+	scene.construct = &construct;
+	scene.next = &next;
+	scene.prev = &prev;
 
 	glBindTexture(GL_TEXTURE0, texture1.handle);
 	glUniform1i(glGetUniformLocation(program, "tex_sampler"), texture1.handle);
 	glUseProgram(program);
 	glUniform2f(glGetUniformLocation(program, "window_scale"), width * .5f, height * .5f);
 
+	int elapsed = 0;
+	double dt = 0;
+	double time = glfwGetTime();
+
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(window)) {
+
+		glfwPollEvents();
+
+		dt = glfwGetTime() - time;
+		if (dt > SCENE_INTERVAL) {
+
+			elapsed++;
+
+			new_batch(&scene);
+
+			printf("\nbatch %d generated at %f, %f.", elapsed, scene.prev->centre.x1, scene.prev->centre.x2);
+			time = glfwGetTime();
+		}
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		for (int i = 0; i < scene.n_batches; i++) {
+		for (int i = 0; i < SCENE_SIZE; i++) {
 			glBindVertexArray(scene.batches[i].handles.vao);
 			glDrawArrays(GL_TRIANGLES, 0, scene.batches[i].n_tiles * 6);
 		}
 
-		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
 
@@ -145,8 +136,6 @@ int main() {
 		glDeleteVertexArrays(1, &handles.vao);
 		glDeleteBuffers(3, buffers);
 	}
-	free(scene.batches);
-	scene.batches = NULL;
 
 	return 0;
 }

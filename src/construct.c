@@ -7,8 +7,8 @@
 #define CONSTRUCT_CAPACITY 100
 #define DEBUG_POINTS_SIZE 3
 
-#define RADIUS_EXTENSION 1.2
-#define THETA_CHANGE_RANGE 0.1
+#define RADIUS_EXTENSION 1.4
+#define THETA_CHANGE_RANGE 0.6
 
 int new_construct(construct_t *c) {
 
@@ -26,10 +26,10 @@ int new_construct(construct_t *c) {
 
 void update_construct(construct_t *c, construct_opts *prev, construct_opts *next) {
 
-	int n = rand_int(3, 8);
+	int n = rand_int(4, 10);
 	float dim = 16.0f;
 	float dim_texture = .5f;
-	double theta = prev->theta + ((rand_int(-5, 5))*THETA_CHANGE_RANGE * M_PI);
+	double theta = prev->theta + ((rand_int(-4, 4) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
 	float radius = sqrt(2.0f * (n * .5f) * dim) + (n * dim * RADIUS_EXTENSION);
 	float dx = radius * cos(theta);
 	;
