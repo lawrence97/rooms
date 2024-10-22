@@ -29,10 +29,10 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 	int n = rand_int(4, 10);
 	float dim = 16.0f;
 	float dim_texture = .5f;
-	double theta = prev->theta + ((rand_int(-4, 4) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
+	double theta = prev->theta + ((rand_int(-6, 6) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
 	float radius = sqrt(2.0f * (n * .5f) * dim) + (n * dim * RADIUS_EXTENSION);
 	float dx = radius * cos(theta);
-	;
+
 	float dy = radius * sin(theta);
 	vec2 centre;
 	centre.x1 = prev->exit.x1 + dx;
@@ -76,25 +76,20 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 		}
 	}
 
-	// north face
 	int doors_north[n - 2];
 	for (int i = 0; i < n - 2; i++) {
 		doors_north[i] = (i + 1);
 	}
 
-	// south face
 	int doors_south[n - 2];
 	for (int i = 0; i < n - 2; i++) {
 		doors_south[i] = ((n * n) - 2) - i;
 	}
-
-	// west face
 	int doors_west[n - 2];
 	for (int i = 0; i < n - 2; i++) {
 		doors_west[i] = (1 + i) * n;
 	}
 
-	// east face
 	int doors_east[n - 2];
 	for (int i = 0; i < n - 2; i++) {
 		doors_east[i] = (n * n) - 1 - (n * (i + 1));

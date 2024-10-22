@@ -14,8 +14,8 @@
 
 #define WIDTH 640
 #define HEIGHT 640
-#define SCENE_SIZE 6
-#define SCENE_INTERVAL 0.05
+#define SCENE_SIZE 8
+#define SCENE_INTERVAL 0.4
 
 int main() {
 
@@ -97,24 +97,45 @@ int main() {
 	int elapsed = 0;
 	double dt = 0;
 	double time = glfwGetTime();
+	vec2 camera_position = {0.0f, 0.0f};
+	vec2 camera_scale = {1.0f, 1.0f};
+	GLuint uni_camera_position_loc = glGetUniformLocation(program, "camera_position");
+	GLuint uni_camera_scale_loc = glGetUniformLocation(program, "camera_scale");
+
+	float target_cam_x = 0;
+	float target_cam_y = 0;
+	float cam_diff_x = 0;
+	float cam_diff_y = 0;
+
+	camera_scale = (vec2){.4f, .4f};
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwPollEvents();
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		dt = glfwGetTime() - time;
 		if (dt > SCENE_INTERVAL) {
 
 			elapsed++;
-
 			new_batch(&scene);
 
 			printf("\nbatch %d generated at %f, %f.", elapsed, scene.prev->centre.x1, scene.prev->centre.x2);
 			time = glfwGetTime();
+
+			target_cam_x = scene.next->centre.x1 * -0.8f;
+			target_cam_y = scene.next->centre.x2 * -0.8f;
 		}
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		cam_diff_x = target_cam_x - camera_position.x1;
+		cam_diff_y = target_cam_y - camera_position.x2;
+
+		camera_position.x1 += cam_diff_x * dt * .5f;
+		camera_position.x2 += cam_diff_y * dt * .5f;
+
+		glUniform2f(uni_camera_position_loc, camera_position.x1, camera_position.x2);
+		glUniform2f(uni_camera_scale_loc, camera_scale.x1, camera_scale.x2);
 
 		for (int i = 0; i < SCENE_SIZE; i++) {
 			glBindVertexArray(scene.batches[i].handles.vao);
@@ -130,7 +151,7 @@ int main() {
 	free_construct(&construct);
 	free_pipeline(&pipeline);
 
-	for (int i = 0; i < scene.n_batches; i++) {
+	for (int i = 0; i < scene.capacity_batches; i++) {
 		handles_t handles = scene.batches[i].handles;
 		GLuint buffers[3] = {handles.pbo, handles.tbo, handles.cbo};
 		glDeleteVertexArrays(1, &handles.vao);
