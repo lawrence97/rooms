@@ -16,10 +16,18 @@ int new_pipeline(pipeline_t *p) {
 	p->capacity_tile = capacity_buffer;
 
 	p->positions = (float *)calloc(capacity_buffer, sizeof(float) * 6 * 2);
+	if (p->positions == NULL) {
+		return -1;
+	}
 	p->texcoords = (float *)calloc(capacity_buffer, sizeof(float) * 6 * 2);
+	if (p->texcoords == NULL) {
+		free(p->positions);
+		return -1;
+	}
 	p->colours = (float *)calloc(capacity_buffer, sizeof(float) * 6 * 4);
-
-	if (p->positions == NULL || p->texcoords == NULL || p->colours == NULL) {
+	if (p->colours == NULL) {
+		free(p->positions);
+		free(p->texcoords);
 		return -1;
 	}
 

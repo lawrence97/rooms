@@ -7,7 +7,7 @@
 #define CONSTRUCT_CAPACITY 100
 #define DEBUG_POINTS_SIZE 3
 
-#define RADIUS_EXTENSION 1.4
+#define RADIUS_EXTENSION 1.3
 #define THETA_CHANGE_RANGE 0.6
 
 int new_construct(construct_t *c) {
@@ -29,7 +29,7 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 	int n = rand_int(4, 10);
 	float dim = 16.0f;
 	float dim_texture = .5f;
-	double theta = prev->theta + ((rand_int(-6, 6) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
+	double theta = prev->theta + ((rand_int(-4, 8) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
 	float radius = sqrt(2.0f * (n * .5f) * dim) + (n * dim * RADIUS_EXTENSION);
 	float dx = radius * cos(theta);
 
@@ -132,7 +132,7 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 	c->tiles[entry].colour = range_colours[2];
 	c->tiles[exit].colour = range_colours[0];
 
-	// debug points
+	// debug points onwards
 	if (c->debug.enabled != 1) {
 		return;
 	}

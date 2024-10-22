@@ -14,8 +14,8 @@
 
 #define WIDTH 640
 #define HEIGHT 640
-#define SCENE_SIZE 8
-#define SCENE_INTERVAL 0.4
+#define SCENE_SIZE 4
+#define SCENE_INTERVAL 0.6
 
 int main() {
 
@@ -45,7 +45,7 @@ int main() {
 
 	glfwSwapInterval(1);
 	glViewport(0, 0, width, height);
-	glClearColor(.1f, .1f, .1f, 1.0f);
+	glClearColor(.0f, .0f, .0f, 1.0f);
 
 	GLuint program = 0;
 	if (new_program(&program, "./shaders/vert.glsl", "./shaders/frag.glsl") < 0) {
@@ -121,18 +121,19 @@ int main() {
 			elapsed++;
 			new_batch(&scene);
 
-			printf("\nbatch %d generated at %f, %f.", elapsed, scene.prev->centre.x1, scene.prev->centre.x2);
 			time = glfwGetTime();
 
 			target_cam_x = scene.next->centre.x1 * -0.8f;
 			target_cam_y = scene.next->centre.x2 * -0.8f;
+			target_cam_x -= cam_diff_x * .5f;
+			target_cam_y -= cam_diff_y * .5f;
 		}
 
 		cam_diff_x = target_cam_x - camera_position.x1;
 		cam_diff_y = target_cam_y - camera_position.x2;
 
-		camera_position.x1 += cam_diff_x * dt * .5f;
-		camera_position.x2 += cam_diff_y * dt * .5f;
+		camera_position.x1 += cam_diff_x * dt * .5f * .4f;
+		camera_position.x2 += cam_diff_y * dt * .5f * .4f;
 
 		glUniform2f(uni_camera_position_loc, camera_position.x1, camera_position.x2);
 		glUniform2f(uni_camera_scale_loc, camera_scale.x1, camera_scale.x2);
