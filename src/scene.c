@@ -3,7 +3,7 @@
 #include "batch.h"
 #include "scene.h"
 
-void new_batch(scene_t *scene) {
+void new_batch(scene_t *scene, int *batch_index_ptr) {
 	unsigned int batch_index = 0;
 	batch_t b;
 	update_construct(scene->construct, scene->prev, scene->next);
@@ -20,4 +20,5 @@ void new_batch(scene_t *scene) {
 
 	scene->batches[batch_index] = b;
 	scene->n_batches++;
+	*batch_index_ptr = batch_index;
 }

@@ -95,6 +95,7 @@ int main() {
 	glUniform2f(glGetUniformLocation(program, "window_scale"), width * .5f, height * .5f);
 
 	int elapsed = 0;
+	int batch_index = 0;
 	double dt = 0;
 	double time = glfwGetTime();
 	vec2 camera_position = {0.0f, 0.0f};
@@ -109,7 +110,6 @@ int main() {
 
 	camera_scale = (vec2){.4f, .4f};
 
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwPollEvents();
@@ -119,29 +119,33 @@ int main() {
 		if (dt > SCENE_INTERVAL) {
 
 			elapsed++;
-			new_batch(&scene);
+			new_batch(&scene, &batch_index);
 
 			time = glfwGetTime();
 
 			target_cam_x = scene.next->centre.x1 * -0.8f;
 			target_cam_y = scene.next->centre.x2 * -0.8f;
-			target_cam_x -= cam_diff_x * .5f;
-			target_cam_y -= cam_diff_y * .5f;
+			target_cam_x -= cam_diff_x * .6f;
+			target_cam_y -= cam_diff_y * .6f;
 		}
 
 		cam_diff_x = target_cam_x - camera_position.x1;
 		cam_diff_y = target_cam_y - camera_position.x2;
 
-		camera_position.x1 += cam_diff_x * dt * .5f * .4f;
-		camera_position.x2 += cam_diff_y * dt * .5f * .4f;
+		camera_position.x1 += cam_diff_x * dt * .5f * .1f;
+		camera_position.x2 += cam_diff_y * dt * .5f * .1f;
 
 		glUniform2f(uni_camera_position_loc, camera_position.x1, camera_position.x2);
 		glUniform2f(uni_camera_scale_loc, camera_scale.x1, camera_scale.x2);
 
 		for (int i = 0; i < SCENE_SIZE; i++) {
 			glBindVertexArray(scene.batches[i].handles.vao);
-			glDrawArrays(GL_TRIANGLES, 0, scene.batches[i].n_tiles * 6);
+			glDrawArrays(GL_TRIANGLES, 0, (scene.batches[i].n_tiles - 3) * 6);
 		}
+
+		glBindVertexArray(scene.batches[batch_index].handles.vao);
+		glDrawArrays(GL_TRIANGLES, (scene.batches[batch_index].n_tiles - 3) * 6,
+					 (scene.batches[batch_index].n_tiles) * 6);
 
 		glfwSwapBuffers(window);
 	}

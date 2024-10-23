@@ -13,4 +13,4 @@ typedef struct scene_t {
 	construct_opts *next;
 } scene_t;
 
-void new_batch(scene_t *scene);
+void new_batch(scene_t *scene, int *batch_index_ptr);

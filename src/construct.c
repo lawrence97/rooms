@@ -29,7 +29,7 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 	int n = rand_int(4, 10);
 	float dim = 16.0f;
 	float dim_texture = .5f;
-	double theta = prev->theta + ((rand_int(-4, 8) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
+	double theta = prev->theta + ((rand_int(-9, 9) / 12.0f) * THETA_CHANGE_RANGE * M_PI);
 	float radius = sqrt(2.0f * (n * .5f) * dim) + (n * dim * RADIUS_EXTENSION);
 	float dx = radius * cos(theta);
 
@@ -48,8 +48,8 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 	vec2 subtexture3 = {.75f, .75f};
 	vec2 range_textures[4] = {subtexture0, subtexture1, subtexture2, subtexture3};
 
-	vec4 red = {1.0f, 0.0f, 0.0f, 1.0f};
-	vec4 green = {0.0f, 1.0f, 0.0f, 1.0f};
+	vec4 red = {1.0f, 0.0f, 0.0f, 0.1f};
+	vec4 green = {0.0f, 1.0f, 0.0f, 0.1f};
 	vec4 blue = {0.0f, 0.0f, 1.0f, 1.0f};
 	vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
 	vec4 range_colours[4] = {red, green, blue, white};
@@ -129,7 +129,7 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 
 	int exit = directions[chosen_direction][chosen_face][chosen_door];
 
-	c->tiles[entry].colour = range_colours[2];
+	c->tiles[entry].colour = range_colours[1];
 	c->tiles[exit].colour = range_colours[0];
 
 	// debug points onwards
@@ -139,7 +139,6 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 
 	float scale_debug = .4f;
 	vec2 texture_debug = range_textures[0];
-	vec4 magenta = {1.0f, 0.0f, 1.0f, 1.0f};
 	vec4 yellow = {1.0f, 1.0f, 0.0f, 1.0f};
 
 	c->debug.centre = centre;
@@ -151,8 +150,10 @@ void update_construct(construct_t *c, construct_opts *prev, construct_opts *next
 	for (int m = 0; m < 3; m++) {
 		int ndb = c->n_tile;
 		if (m == 0) {
-			c->tiles[ndb].colour = magenta;
-		} else {
+			c->tiles[ndb].colour = blue;
+		} else if (m == 1) {
+			c->tiles[ndb].colour = yellow;
+		} else if (m == 2) {
 			c->tiles[ndb].colour = yellow;
 		}
 		c->tiles[ndb].dimension = (vec2){dim * scale_debug, dim * scale_debug};
